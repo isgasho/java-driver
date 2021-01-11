@@ -97,7 +97,10 @@ public enum DefaultDriverOption implements DriverOption {
    * A custom filter to include/exclude nodes.
    *
    * <p>Value-Type: {@link String}
+   *
+   * @deprecated use {@link #LOAD_BALANCING_DISTANCE_EVALUATOR_CLASS} instead.
    */
+  @Deprecated
   LOAD_BALANCING_FILTER_CLASS("basic.load-balancing-policy.filter.class"),
 
   /**
@@ -838,6 +841,13 @@ public enum DefaultDriverOption implements DriverOption {
    */
   LOAD_BALANCING_DC_FAILOVER_ALLOW_FOR_LOCAL_CONSISTENCY_LEVELS(
       "advanced.load-balancing-policy.dc-failover.allow-for-local-consistency-levels"),
+  /**
+   * The class name of a custom {@link
+   * com.datastax.oss.driver.api.core.loadbalancing.NodeDistanceEvaluator}.
+   *
+   * <p>Value-Type: {@link String}
+   */
+  LOAD_BALANCING_DISTANCE_EVALUATOR_CLASS("basic.load-balancing-policy.evaluator.class"),
   ;
 
   private final String path;

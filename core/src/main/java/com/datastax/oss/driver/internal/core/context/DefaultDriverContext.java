@@ -39,6 +39,7 @@ import com.datastax.oss.driver.api.core.config.DriverConfigLoader;
 import com.datastax.oss.driver.api.core.config.DriverExecutionProfile;
 import com.datastax.oss.driver.api.core.connection.ReconnectionPolicy;
 import com.datastax.oss.driver.api.core.loadbalancing.LoadBalancingPolicy;
+import com.datastax.oss.driver.api.core.loadbalancing.NodeDistanceEvaluator;
 import com.datastax.oss.driver.api.core.metadata.Node;
 import com.datastax.oss.driver.api.core.metadata.NodeStateListener;
 import com.datastax.oss.driver.api.core.metadata.schema.SchemaChangeListener;
@@ -232,7 +233,7 @@ public class DefaultDriverContext implements InternalDriverContext {
   private final SchemaChangeListener schemaChangeListenerFromBuilder;
   private final RequestTracker requestTrackerFromBuilder;
   private final Map<String, String> localDatacentersFromBuilder;
-  private final Map<String, Predicate<Node>> nodeFiltersFromBuilder;
+  private final Map<String, NodeDistanceEvaluator> nodeDistanceEvaluatorsFromBuilder;
   private final ClassLoader classLoader;
   private final InetSocketAddress cloudProxyAddress;
   private final LazyReference<RequestLogFormatter> requestLogFormatterRef =
@@ -284,7 +285,7 @@ public class DefaultDriverContext implements InternalDriverContext {
             "sslEngineFactory",
             () -> buildSslEngineFactory(programmaticArguments.getSslEngineFactory()),
             cycleDetector);
-    this.nodeFiltersFromBuilder = programmaticArguments.getNodeFilters();
+    this.nodeDistanceEvaluatorsFromBuilder = programmaticArguments.getNodeDistanceEvaluators();
     this.classLoader = programmaticArguments.getClassLoader();
     this.cloudProxyAddress = programmaticArguments.getCloudProxyAddress();
     this.startupClientId = programmaticArguments.getStartupClientId();
@@ -959,8 +960,8 @@ public class DefaultDriverContext implements InternalDriverContext {
 
   @Nullable
   @Override
-  public Predicate<Node> getNodeFilter(@NonNull String profileName) {
-    return nodeFiltersFromBuilder.get(profileName);
+  public NodeDistanceEvaluator getNodeDistanceEvaluator(@NonNull String profileName) {
+    return nodeDistanceEvaluatorsFromBuilder.get(profileName);
   }
 
   @Nullable
