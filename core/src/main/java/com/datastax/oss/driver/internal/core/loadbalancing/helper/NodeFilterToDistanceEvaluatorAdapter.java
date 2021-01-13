@@ -33,9 +33,6 @@ public class NodeFilterToDistanceEvaluatorAdapter implements NodeDistanceEvaluat
   @Nullable
   @Override
   public NodeDistance evaluateDistance(@NonNull Node node, @Nullable String localDc) {
-    if (!nodeFilter.test(node)) {
-      return NodeDistance.IGNORED;
-    }
-    return null;
+    return nodeFilter.test(node) ? null : NodeDistance.IGNORED;
   }
 }

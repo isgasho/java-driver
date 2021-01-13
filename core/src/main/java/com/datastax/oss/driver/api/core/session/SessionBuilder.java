@@ -435,6 +435,34 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
    * <p>If the filter is specified programmatically with this method, it overrides the configuration
    * (that is, the {@code load-balancing-policy.filter.class} option will be ignored).
    *
+   * <p><strong>This method has been deprecated in favor of {@link
+   * #withNodeDistanceEvaluator(String, NodeDistanceEvaluator)}</strong>. If you were using node
+   * filters, you can easily replace your filters with the following implementation of {@link
+   * NodeDistanceEvaluator}:
+   *
+   * <pre>{@code
+   * public class NodeFilterToDistanceEvaluatorAdapter implements NodeDistanceEvaluator {
+   *
+   *   private final Predicate<Node> nodeFilter;
+   *
+   *   public NodeFilterToDistanceEvaluatorAdapter(Predicate<Node> nodeFilter) {
+   *     this.nodeFilter = nodeFilter;
+   *   }
+   *
+   *   public NodeDistance evaluateDistance(Node node, String localDc) {
+   *     return nodeFilter.test(node) ? null : NodeDistance.IGNORED;
+   *   }
+   * }
+   * }</pre>
+   *
+   * The same can be achieved using a lambda + closure:
+   *
+   * <pre>{@code
+   * Predicate<Node> nodeFilter = ...
+   * NodeDistanceEvaluator evaluator =
+   *   (node, localDc) -> nodeFilter.test(node) ? null : NodeDistance.IGNORED;
+   * }</pre>
+   *
    * @see #withNodeFilter(Predicate)
    * @deprecated Use {@link #withNodeDistanceEvaluator(String, NodeDistanceEvaluator)} instead.
    */
@@ -447,6 +475,10 @@ public abstract class SessionBuilder<SelfT extends SessionBuilder, SessionT> {
 
   /**
    * Alias to {@link #withNodeFilter(String, Predicate)} for the default profile.
+   *
+   * <p><strong>This method has been deprecated in favor of {@link
+   * #withNodeDistanceEvaluator(NodeDistanceEvaluator)}</strong>. See the javadocs of {@link
+   * #withNodeFilter(String, Predicate)} to understand how to migrate your legacy node filters.
    *
    * @deprecated Use {@link #withNodeDistanceEvaluator(NodeDistanceEvaluator)} instead.
    */
