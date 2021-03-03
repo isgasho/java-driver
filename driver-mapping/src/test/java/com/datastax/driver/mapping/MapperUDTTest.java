@@ -338,12 +338,7 @@ public class MapperUDTTest extends CCMTestsSupport {
   public void should_be_able_to_use_udtCodec_standalone() {
     // Create a separate Cluster/Session to start with a CodecRegistry from scratch (so not already
     // registered).
-    Cluster cluster =
-        register(
-            Cluster.builder()
-                .addContactPoints(getContactPoints())
-                .withPort(ccm().getBinaryPort())
-                .build());
+    Cluster cluster = register(createClusterBuilder().build());
     CodecRegistry registry = cluster.getConfiguration().getCodecRegistry();
     Session session = cluster.connect(keyspace);
 

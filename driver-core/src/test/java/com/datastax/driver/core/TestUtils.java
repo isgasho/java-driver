@@ -19,6 +19,7 @@ import static com.datastax.driver.core.ConditionChecker.check;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.datastax.driver.core.Cluster.Builder;
 import com.datastax.driver.core.policies.RoundRobinPolicy;
 import com.datastax.driver.core.policies.WhiteListPolicy;
 import com.google.common.base.Predicate;
@@ -815,11 +816,33 @@ public abstract class TestUtils {
     Host controlHost = cluster.manager.controlConnection.connectedHost();
     List<InetSocketAddress> singleAddress =
         Collections.singletonList(controlHost.getEndPoint().resolve());
-    return Cluster.builder()
-        .addContactPoints(controlHost.getEndPoint().resolve().getAddress())
-        .withPort(ccm.getBinaryPort())
+    return configureClusterBuilder(Cluster.builder(), ccm)
         .withLoadBalancingPolicy(new WhiteListPolicy(new RoundRobinPolicy(), singleAddress))
         .build();
+  }
+
+  /**
+   * Configures the builder with contact points and port that match the given CCM cluster. Therefore
+   * it's not required to call {@link Cluster.Builder#addContactPointsWithPorts}, it will be done
+   * automatically.
+   *
+   * @return The cluster builder (for method chaining).
+   */
+  public static Builder configureClusterBuilder(Builder builder, CCMAccess ccm) {
+    builder
+        // use a different codec registry for each cluster instance
+        .withCodecRegistry(new CodecRegistry())
+        // add only one contact point to force node1 to become the control host; some tests rely on
+        // that.
+        .addContactPoints(ccm.getContactPoints().get(0))
+        .withPort(ccm.getBinaryPort());
+    if (ccm.getCassandraVersion().compareTo(VersionNumber.parse("3.10")) >= 0
+        && ccm.getCassandraVersion().compareTo(VersionNumber.parse("4.0-beta5")) < 0) {
+      // prevent usage of protocol v5 for 3.10 and 3.11 since these versions have the beta
+      // version of it
+      builder.withProtocolVersion(ProtocolVersion.V4);
+    }
+    return builder;
   }
 
   /** @return a {@link QueryOptions} that disables debouncing by setting intervals to 0ms. */
@@ -867,6 +890,8 @@ public abstract class TestUtils {
     try {
       task.call();
     } catch (Exception e) {
+      if (logException) logger.error(e.getMessage(), e);
+    } catch (AssertionError e) {
       if (logException) logger.error(e.getMessage(), e);
     }
   }

@@ -36,7 +36,7 @@ public class MetricsTest extends CCMTestsSupport {
 
   @Override
   public Cluster.Builder createClusterBuilder() {
-    return Cluster.builder()
+    return super.createClusterBuilder()
         .withRetryPolicy(
             new RetryPolicy() {
               @Override
